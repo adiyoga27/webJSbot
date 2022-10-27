@@ -1,11 +1,11 @@
-import webjs from "whatsapp-web.js"
-const {
-    LocalAuth,
-    Client
-} = webjs
+import {LocalAuth, Client} from "whatsapp-web.js"
 import {
     connection
 } from "../services/database"
+
+
+const clients = new Map<string, Client>();
+
 
 
 
@@ -18,30 +18,34 @@ connection.connect(function (err) {
     console.log('connected as id ' + connection.threadId);
 });
 
-const map = new Map();
 
 connection.query('SELECT * FROM client', function (error, results, fields) {
     if (error) throw error;
 
     results.map((item:any) => {
         console.log('The solution is: ', item.clientID);
+        clients.set(item.clientID, 
+         new Client({
+                authStrategy: new LocalAuth({
+                    clientId: item.clientID,
+                    dataPath: "./auth"
+                }),
+                puppeteer: {
+                    headless: false
+                }
+            }),
+            
+        )
+
     })
 
 
 });
 
 
+export {clients}
 
 
-export const client = new Client({
-    authStrategy: new LocalAuth({
-        clientId: "codingaja",
-        dataPath: "./auth"
-    }),
-    puppeteer: {
-        headless: false
-    }
-});
 
 // client.on('qr', (qr) => {
 //     // Generate and scan this code with your phone
