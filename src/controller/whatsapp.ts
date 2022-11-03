@@ -1,54 +1,50 @@
-import {LocalAuth, Client} from "whatsapp-web.js"
+import { LocalAuth, Client, Message } from "whatsapp-web.js"
 import {
     connection, getClientData
 } from "../services/database"
 const clients = new Map<string, Client>();
-
-getClientData().then((data:any)=>{
-        data.forEach((result:any) => {
+getClientData().then((data: any) => {
+    data.forEach((result: any) => {
         console.log('The solution is: ', result.clientID);
-        
         clients.set(result.clientID, new Client({
             authStrategy: new LocalAuth({
                 clientId: result.clientID,
                 dataPath: "./auth"
             }),
             puppeteer: {
-                headless: true
+                headless: false
             }
         }))
-
-        
-clients.forEach(client => {
-    client.on('qr', (qr) => {
-        console.log('QR RECEIVED', qr);
-    });
-
-    client.on('ready', async () => {
-        console.log('Client is ready!');    
-    });
-    client.initialize();
-  })
+        clients.forEach(client => {
+            client.on('ready', async () => {
+                console.log('Client is ready!');
+            });
+            client.on('qr', (qr) => {
+                console.log('QR RECEIVED', qr);
+            });
+            client.initialize();
+        })
     });
     return clients;
 })
 
 
+ const sendMessage = function(req:any, res:any){
+     const client_id = req.headers.client_id
+     const api_key = req.headers.api_key
+     console.log("SELECT * FROM clients WHERE is_active = 1 and clientID = "+client_id+" and api_key = "+api_key+" ORDER BY id DESC LIMIT 1");
+        connection.query(
+            "SELECT * FROM clients WHERE is_active = 1 and clientID = "+client_id+" and api_key = "+api_key+" ORDER BY id DESC LIMIT 1", 
+            function(err:any, rows:any, fields:any){     
+                console.log(rows)                                           
+                if(rows != undefined){
 
-export {clients}
+                    clients.get(rows[0].clientID)?.sendMessage('6285792486889@c.us', 'tester adiyoga').then(function( message){
+                            return message
+                        })
+                }    
+                return false
 
-
-
-// client.on('qr', (qr) => {
-//     // Generate and scan this code with your phone
-//     console.log('QR RECEIVED', qr);
-// });
-
-// client.on('ready', async () => {
-//     console.log('Client is ready!');
-//     let number = 6282145566492;
-//     let message = "yuhuu";
-//     number = `6282145566492@c.us`;
-//    var result = await client.sendMessage(number, message);
-//    console.log(result);
-// });
+            }
+    )}
+export { clients, sendMessage }
