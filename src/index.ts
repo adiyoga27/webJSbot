@@ -53,10 +53,10 @@ io.on('connection', (socket)  => {
         // socket.emit(Uatiz.socket.Status_Uaitz, Uatiz.socket.qr);
     })
   })
-clients.get('1234')?.on('ready', (response: any)=>{
+clients.get(clientID)?.on('ready', (response: any)=>{
   console.log(response);
   console.log("Client Ready");
-  const info = clients.get('1234')?.info;
+  const info = clients.get(clientID)?.info;
   
   io.emit('user',  {
       'id' : info?.platform,
@@ -66,10 +66,10 @@ clients.get('1234')?.on('ready', (response: any)=>{
 })
   socket.on('logout',()=>{
     if (fs.existsSync("./auth/session-1234")) {
-      clients.get('1234')?.destroy();
+      clients.get(clientID)?.destroy();
 
       fs.rmSync("./auth/session-1234", { recursive: true, force: true });
-      clients.get('1234')?.initialize();
+      clients.get(clientID)?.initialize();
     }
   })
 });
