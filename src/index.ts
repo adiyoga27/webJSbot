@@ -5,6 +5,8 @@ import express from 'express'
 import { Server } from "socket.io";
 import http from "http"
 import fs from "fs"
+import e from "express";
+import { getString } from "./helpers/utils";
 const QRcode = require('qrcode');
 dotenv.config()
 const app = express()
@@ -26,8 +28,9 @@ export const io = new Server(server, {
 });
 
 
-io.on('connection', (socket) => {
-  const clientID = socket.handshake.headers.client_id;
+io.on('connection', (socket)  => {
+  
+  const clientID = getString(socket.handshake.headers.client_id)
 
   socket.on('check', ()=>{
     console.log("Check Emit")
@@ -38,7 +41,7 @@ io.on('connection', (socket) => {
   })
   })
 
-  clients.get('1234')?.on('qr', (qr) => {
+  clients.get(clientID)?.on('qr', (qr) => {
     console.log(qr)
     QRcode.toDataURL(qr,(error:any, url:any) => {
         if (error) {
